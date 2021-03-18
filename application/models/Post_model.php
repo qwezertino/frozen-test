@@ -1,9 +1,9 @@
 <?php
 
 namespace Model;
+
 use App;
 use CI_Emerald_Model;
-use Comment_model;
 use Exception;
 use stdClass;
 
@@ -13,7 +13,8 @@ use stdClass;
  * Date: 27.01.2020
  * Time: 10:10
  */
-class Post_model extends CI_Emerald_Model {
+class Post_model extends CI_Emerald_Model
+{
     const CLASS_TABLE = 'post';
 
 
@@ -21,6 +22,8 @@ class Post_model extends CI_Emerald_Model {
     protected $user_id;
     /** @var string */
     protected $text;
+    /** @var integer */
+    protected $likes;
     /** @var string */
     protected $img;
 
@@ -29,9 +32,10 @@ class Post_model extends CI_Emerald_Model {
     /** @var string */
     protected $time_updated;
 
+
     // generated
     protected $comments;
-    protected $likes;
+
     protected $user;
 
 
@@ -134,10 +138,19 @@ class Post_model extends CI_Emerald_Model {
     // generated
 
     /**
-     * @return mixed
+     * @return integer
      */
-    public function get_likes()
+    public function get_likes(): int
     {
+        return $this->likes;
+    }
+
+    /**
+     * @return integer
+     */
+    public function add_like(): int
+    {
+        $this->save('likes', ++$this->likes);
         return $this->likes;
     }
 
@@ -148,8 +161,7 @@ class Post_model extends CI_Emerald_Model {
     {
         $this->is_loaded(TRUE);
 
-        if (empty($this->comments))
-        {
+        if (empty($this->comments)) {
             $this->comments = Comment_model::get_all_by_assign_id($this->get_id());
         }
         return $this->comments;
@@ -163,13 +175,10 @@ class Post_model extends CI_Emerald_Model {
     {
         $this->is_loaded(TRUE);
 
-        if (empty($this->user))
-        {
-            try
-            {
+        if (empty($this->user)) {
+            try {
                 $this->user = new User_model($this->get_user_id());
-            } catch (Exception $exception)
-            {
+            } catch (Exception $exception) {
                 $this->user = new User_model();
             }
         }
@@ -202,7 +211,15 @@ class Post_model extends CI_Emerald_Model {
         return (App::get_ci()->s->get_affected_rows() > 0);
     }
 
-    public function comment(){
+    public function comment($message)
+    {
+        $user = $this->get_user();
+        $data = [
+            'user_id' => $user->get_id(),
+            'assign_id' => $this->id,
+            'text' => $message
+        ];
+        return Comment_model::create($data);
 
     }
 
@@ -215,8 +232,7 @@ class Post_model extends CI_Emerald_Model {
 
         $data = App::get_ci()->s->from(self::CLASS_TABLE)->many();
         $ret = [];
-        foreach ($data as $i)
-        {
+        foreach ($data as $i) {
             $ret[] = (new self())->set($i);
         }
         return $ret;
@@ -230,8 +246,7 @@ class Post_model extends CI_Emerald_Model {
      */
     public static function preparation($data, $preparation = 'default')
     {
-        switch ($preparation)
-        {
+        switch ($preparation) {
             case 'main_page':
                 return self::_preparation_main_page($data);
             case 'full_info':
@@ -249,8 +264,7 @@ class Post_model extends CI_Emerald_Model {
     {
         $ret = [];
 
-        foreach ($data as $d)
-        {
+        foreach ($data as $d) {
             $o = new stdClass();
 
             $o->id = $d->get_id();
@@ -284,12 +298,10 @@ class Post_model extends CI_Emerald_Model {
         $o->img = $data->get_img();
 
 
-//            var_dump($d->get_user()->object_beautify()); die();
-
         $o->user = User_model::preparation($data->get_user(), 'main_page');
         $o->coments = Comment_model::preparation($data->get_comments(), 'full_info');
 
-        $o->likes = rand(0, 25);
+        $o->likes = $data->get_likes();
 
 
         $o->time_created = $data->get_time_created();

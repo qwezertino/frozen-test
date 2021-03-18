@@ -55,8 +55,8 @@ var app = new Vue({
 				self.invalidPass = true
 			}
 			else{
-				self.invalidLogin = false
-				self.invalidPass = false
+				self.invalidLogin = false;
+				self.invalidPass = false;
 				axios.post('/main_page/login', {
 					login: self.login,
 					password: self.pass
@@ -65,6 +65,7 @@ var app = new Vue({
 						setTimeout(function () {
 							$('#loginModal').modal('hide');
 						}, 500);
+						console.log(response.data);
 					})
 			}
 		},
@@ -87,22 +88,26 @@ var app = new Vue({
 		},
 		openPost: function (id) {
 			var self= this;
+			console.log('POST:' + id);
 			axios
 				.get('/main_page/get_post/' + id)
 				.then(function (response) {
+					console.log(response.data);
 					self.post = response.data.post;
 					if(self.post){
 						setTimeout(function () {
 							$('#postModal').modal('show');
 						}, 500);
+
 					}
 				})
 		},
 		addLike: function (id) {
 			var self= this;
 			axios
-				.get('/main_page/like')
+				.get('/main_page/like/' + id)
 				.then(function (response) {
+					console.log(response.data);
 					self.likes = response.data.likes;
 				})
 

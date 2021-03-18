@@ -17,7 +17,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | environments.
 |
 */
-$config['base_url'] =  'https://'. DOMAIN;
+$config['base_url'] =  'http://'. DOMAIN;
 
 /*
 |--------------------------------------------------------------------------
@@ -363,7 +363,7 @@ $config['sess_driver'] = 'files';
 $config['sess_cookie_name'] = 'my_session';
 $config['sess_expiration'] = 3600;
 $config['sess_save_path'] = APPPATH.'cache/session';
-$config['sess_match_ip'] = TRUE;
+$config['sess_match_ip'] = FALSE;
 $config['sess_time_to_update'] = 600;
 $config['sess_regenerate_destroy'] = FALSE;
 
@@ -386,8 +386,8 @@ $config['sess_regenerate_destroy'] = FALSE;
 
 
 
-$config['cookie_prefix'] = '';
-$config['cookie_domain'] = '.' . DOMAIN;
+$config['cookie_prefix'] = 'TEST_';
+$config['cookie_domain'] = '';//'.' . DOMAIN;
 $config['cookie_path'] = '/';
 $config['cookie_secure'] = FALSE;
 $config['cookie_httponly'] = FALSE;

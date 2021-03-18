@@ -13,7 +13,8 @@ use stdClass;
  * Date: 27.01.2020
  * Time: 10:10
  */
-class User_model extends CI_Emerald_Model {
+class User_model extends CI_Emerald_Model
+{
     const CLASS_TABLE = 'user';
 
 
@@ -29,6 +30,10 @@ class User_model extends CI_Emerald_Model {
     protected $avatarfull;
     /** @var int */
     protected $rights;
+    /** @var integer */
+    protected $like_balance;
+    /** @var integer */
+    protected $like_total_balance;
     /** @var float */
     protected $wallet_balance;
     /** @var float */
@@ -138,6 +143,90 @@ class User_model extends CI_Emerald_Model {
         return $this->save('rights', $rights);
     }
 
+    /** @return integer */
+    public function get_like_balance(): int
+    {
+        return $this->like_balance;
+    }
+
+    /** @return integer */
+    public function set_like_balance($count): int
+    {
+        $this->save('like_balance', $count);
+        return $this->like_balance;
+    }
+    /** @return integer */
+    public function set_like_total_balance($count): int
+    {
+        $this->save('like_total_balance', $count);
+        return $this->like_total_balance;
+    }
+
+    /**
+     * @param $amount
+     * @return float
+     */
+    public function like_add($amount): float
+    {
+        $like_balance = $this->get_like_balance();
+
+        $this->set_like_balance($like_balance + $amount);
+        $this->set_like_total_balance($this->like_total_balance + $amount);
+
+        return $this->get_like_balance();
+    }
+    /**
+     * @param $amount
+     * @return float
+     * @throws Exception
+     */
+    public function like_withdraw($amount = 1): float
+    {
+        $like_balance = $this->get_like_balance();
+
+        if ($like_balance < 1) {
+            throw new Exception('EMPTY LIKE BALANCE');
+        }
+
+        $this->set_like_balance($like_balance - $amount);
+
+        return $this->get_like_balance();
+    }
+    /**
+     * @param $amount
+     * @return float
+     * @throws Exception
+     */
+    public function wallet_add($amount): float
+    {
+        $wallet_balance = $this->get_wallet_balance();
+
+        $this->set_wallet_balance($wallet_balance + $amount);
+
+        $this->set_wallet_total_refilled($this->get_wallet_total_refilled() + $amount);
+
+        return $this->get_wallet_balance();
+    }
+
+    /**
+     * @param $amount
+     * @return float
+     * @throws Exception
+     */
+    public function wallet_withdraw($amount): float
+    {
+        $wallet_balance = $this->get_wallet_balance();
+
+        if ($wallet_balance < $amount) {
+            throw new Exception('EMPTY BALANCE');
+        }
+
+        $this->set_wallet_balance($wallet_balance - $amount);
+
+        $this->set_wallet_total_withdrawn($this->get_wallet_total_withdrawn() + $amount);
+
+        return $this->get_wallet_balance();
+    }
     /**
      * @return float
      */
@@ -264,13 +353,12 @@ class User_model extends CI_Emerald_Model {
      * @return self[]
      * @throws Exception
      */
-    public static function get_all():array
+    public static function get_all(): array
     {
 
         $data = App::get_ci()->s->from(self::CLASS_TABLE)->many();
         $ret = [];
-        foreach ($data as $i)
-        {
+        foreach ($data as $i) {
             $ret[] = (new self())->set($i);
         }
         return $ret;
@@ -289,12 +377,11 @@ class User_model extends CI_Emerald_Model {
     /**
      * @return bool
      */
-    public static function is_logged():bool
+    public static function is_logged(): bool
     {
         $steam_id = intval(self::get_session_id());
         return $steam_id > 0;
     }
-
 
 
     /**
@@ -303,19 +390,16 @@ class User_model extends CI_Emerald_Model {
      */
     public static function get_user()
     {
-        if (! is_null(self::$_current_user)) {
+        if (!is_null(self::$_current_user)) {
             return self::$_current_user;
         }
-        if ( ! is_null(self::get_session_id()))
-        {
+        if (!is_null(self::get_session_id())) {
             self::$_current_user = new self(self::get_session_id());
             return self::$_current_user;
-        } else
-        {
+        } else {
             return new self();
         }
     }
-
 
 
     /**
@@ -326,8 +410,7 @@ class User_model extends CI_Emerald_Model {
      */
     public static function preparation($data, $preparation = 'default')
     {
-        switch ($preparation)
-        {
+        switch ($preparation) {
             case 'main_page':
                 return self::_preparation_main_page($data);
             case 'default':
@@ -366,8 +449,7 @@ class User_model extends CI_Emerald_Model {
     {
         $o = new stdClass();
 
-        if (!$data->is_loaded())
-        {
+        if (!$data->is_loaded()) {
             $o->id = NULL;
         } else {
             $o->id = $data->get_id();

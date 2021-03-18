@@ -2,10 +2,10 @@
 
 namespace Model;
 use App;
-use CI_Model;
+use CI_Emerald_Model;
 use CriticalException;
 
-class Login_model extends CI_Model {
+class Login_model extends CI_Emerald_Model {
 
     public function __construct()
     {
@@ -22,9 +22,12 @@ class Login_model extends CI_Model {
     {
         // если перенедан пользователь
         $user->is_loaded(TRUE);
-
-        App::get_ci()->session->set_userdata('id', $user->get_id());
+        $data = array(
+            'id' => $user->id,
+            'name' => $user->get_personaname(),
+            'email' => $user->get_email(),
+        );
+        App::get_ci()->session->set_userdata($data);
+        //App::get_ci()->session->set_userdata('id', $user->get_id());
     }
-
-
 }
